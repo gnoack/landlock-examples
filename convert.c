@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
       err(1, "open");
   } else if (optind != argc) {
     usage();
-    err(1, "wrong number of arguments");
+    errx(1, "wrong number of arguments");
   }
 
   /* Enable the sandbox. */
