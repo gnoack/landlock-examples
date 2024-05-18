@@ -35,28 +35,31 @@ void convert(int infd, int outfd) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  int infd = STDIN_FILENO;
-  int outfd = STDOUT_FILENO;
-  
-  /* Initialization phase: Parse flags. */
+void parse_flags(int argc, char *argv[], int *infd, int *outfd) {
   int c;
   while ((c = getopt(argc, argv, "o:")) != -1) {
     switch (c) {
     case 'o':
-      outfd = creat(optarg, S_IRUSR | S_IWUSR | S_IRGRP);
-      if (outfd < 0)
+      *outfd = creat(optarg, S_IRUSR | S_IWUSR | S_IRGRP);
+      if (*outfd < 0)
         err(1, "creat");
     }
   }
   if (optind == argc - 1) {
-    infd = open(argv[optind], O_RDONLY);
-    if (infd < 0)
+    *infd = open(argv[optind], O_RDONLY);
+    if (*infd < 0)
       err(1, "open");
   } else if (optind != argc) {
     usage();
     errx(1, "wrong number of arguments");
   }
+}
+
+int main(int argc, char *argv[]) {
+  /* Initialization phase: Parse flags. */
+  int infd = STDIN_FILENO;
+  int outfd = STDOUT_FILENO;
+  parse_flags(argc, argv, &infd, &outfd);
 
   /* Enable the sandbox. */
   if (promise_no_further_file_access() < 0)
