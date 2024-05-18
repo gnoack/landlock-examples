@@ -1,4 +1,4 @@
-/* A landlocked version of the UNIX tr command. */
+/* A landlocked version of a file conversion command. */
 
 #include <err.h>
 #include <fcntl.h>
@@ -15,6 +15,8 @@ void convert(int infd, int outfd) {
   /*
    * This is a dummy conversion function,
    * which turns all 'x' into 'X'.
+   * In a real-life scenario, this conversion would be more involved
+   * and would pose a big attack surface.
    */
   char c;
   while (1) {
@@ -37,7 +39,7 @@ int main(int argc, char *argv[]) {
   int infd = STDIN_FILENO;
   int outfd = STDOUT_FILENO;
   
-  /* Parse flags. */
+  /* Initialization phase: Parse flags. */
   int c;
   while ((c = getopt(argc, argv, "o:")) != -1) {
     switch (c) {
@@ -56,12 +58,10 @@ int main(int argc, char *argv[]) {
     err(1, "wrong number of arguments");
   }
 
-  /*
-   * Enable the sandbox.
-   */
+  /* Enable the sandbox. */
   if (promise_no_further_file_access() < 0)
     err(1, "landlock");
 
-  /* Convert */
+  /* Start processing untrusted input: Convert. */
   convert(infd, outfd);
 }
