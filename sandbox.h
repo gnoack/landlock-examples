@@ -15,3 +15,4 @@
  *   Populates errno with an error code from Landlock.
  */
 int promise_no_further_file_access();
+

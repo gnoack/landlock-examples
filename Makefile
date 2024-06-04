@@ -2,9 +2,15 @@
 
 CFLAGS = -Wall
 
-all: tr convert
+ifneq ($(KBUILD_OUTPUT),)
+	CFLAGS += -I $(KBUILD_OUTPUT)/usr/include
+endif
+
+all: tr convert nonet
 
 tr: tr.o sandbox.o
+
+nonet: nonet.o sandbox_socket.o
 
 convert: convert.o sandbox.o
 
