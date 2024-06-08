@@ -15,5 +15,5 @@ nonet: nonet.o sandbox_socket.o
 convert: convert.o sandbox.o
 
 clean:
-	@rm -f *.o tr convert *~
+	@rm -f *.o tr nonet convert *~
 
