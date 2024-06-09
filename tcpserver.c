@@ -1,4 +1,21 @@
-/* tcpserver is a simple TCP server */
+/* tcpserver is a simple TCP server.
+ *
+ * This example demonstrates how Landlock's socket(2) support
+ * interacts with the use of BSD sockets in TCP servers.
+ *
+ * Differences to a real-world program:
+ *
+ *  - We play with Landlock's socket creation support here, but a
+ *    real-world program should also restrict other types of access
+ *    (e.g. to the file system).
+ *
+ *  - The TCP server is slightly simplified and does not do
+ *    multithreading or create subprocesses.  (That would work
+ *    though.)
+ *
+ * Landlock's socket creation support is currently under development
+ * (as of June 2024), and the API may change in the future.
+ */
 
 #include <err.h>
 #include <netdb.h>
