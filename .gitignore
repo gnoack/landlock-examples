@@ -3,4 +3,5 @@
 tr
 convert
 nonet
+tcpserver
 perf.data*
