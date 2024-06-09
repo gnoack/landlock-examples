@@ -3,6 +3,7 @@
  * Landlock sandbox helpers.
  */
 
+#include <err.h>
 #include <errno.h>
 #include <linux/landlock.h>
 #include <linux/prctl.h>
@@ -82,6 +83,7 @@ out:
 #else
 
 int promise_no_new_sockets() {
+  warn("landlock: not restricting socket(): missing headers");
   return 0; /* missing the Landlock header at compile time */
 }
 
