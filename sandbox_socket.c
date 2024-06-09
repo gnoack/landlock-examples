@@ -57,7 +57,7 @@ int promise_no_new_sockets() {
    * at the given ABI version.
    */
   struct landlock_ruleset_attr attr = {
-    .handled_access_socket = LANDLOCK_ACCESS_SOCKET_CREATE,
+      .handled_access_socket = LANDLOCK_ACCESS_SOCKET_CREATE,
   };
   int ruleset_fd =
       syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);
@@ -82,7 +82,7 @@ out:
 #else
 
 int promise_no_new_sockets() {
-  return 0;  /* missing the Landlock header at compile time */
+  return 0; /* missing the Landlock header at compile time */
 }
 
-#endif  /* LANDLOCK_ACCESS_SOCKET_CREATE */
+#endif /* LANDLOCK_ACCESS_SOCKET_CREATE */

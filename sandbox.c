@@ -68,7 +68,7 @@ int promise_no_further_file_access() {
    * at the given ABI version.
    */
   struct landlock_ruleset_attr attr = {
-      .handled_access_fs = landlock_fs_access_rights[abi-1],
+      .handled_access_fs = landlock_fs_access_rights[abi - 1],
   };
   int ruleset_fd =
       syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);

@@ -25,11 +25,11 @@ void convert(int infd, int outfd) {
       err(1, "read");
     else if (ret == 0)
       return; /* EOF */
-    
+
     if (c == 'x') {
       c = 'X';
     }
-    
+
     if (write(outfd, &c, 1) < 0)
       err(1, "write");
   }
