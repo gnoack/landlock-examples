@@ -32,6 +32,7 @@
 void handle(int fd) {
   /* Pretend that the process got taken over by an attacker. */
   naughty_create_new_socket();
+  naughty_reuse_socket(4);
 
   write(fd, "bye\n", 4);
 }
