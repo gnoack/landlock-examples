@@ -18,6 +18,7 @@
  */
 
 #include <err.h>
+#include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,19 +27,12 @@
 #include <unistd.h>
 
 #include "sandbox_socket.h"
+#include "naughty.h"
 
 void handle(int fd) {
-  /*
-   * We attempt to open a new socket,
-   * but this is going to fail within the Landlock policy.
-   */
-  int s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s < 0) {
-    write(fd, "socket() fail\n", 14);
-  } else {
-    write(fd, "socket() ok\n", 12);
-    close(s);
-  }
+  /* Pretend that the process got taken over by an attacker. */
+  naughty_create_new_socket();
+
   write(fd, "bye\n", 4);
 }
 
@@ -90,9 +84,8 @@ int main(int argc, char *argv[]) {
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_size = sizeof(peer_addr);
     int fd = accept(sockfd, (struct sockaddr *)&peer_addr, &peer_addr_size);
-    if (fd < 0) {
+    if (fd < 0)
       err(1, "accept");
-    }
 
     handle(fd);
     close(fd);

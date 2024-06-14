@@ -12,7 +12,7 @@ tr: tr.o sandbox.o
 
 nonet: nonet.o sandbox_socket.o
 
-tcpserver: tcpserver.o sandbox_socket.o
+tcpserver: tcpserver.o sandbox_socket.o naughty.o
 
 convert: convert.o sandbox.o
 
