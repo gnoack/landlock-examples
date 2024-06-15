@@ -12,4 +12,13 @@ void naughty_create_new_socket() {
     printf("socket() could be created!\n");
     close(s);
   }
+
+  int sv[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0)
+    warn("socketpair(AF_UNIX, SOCK_STREAM, 0, ...)");
+  else {
+    printf("socketpair() could be created!\n");
+    close(sv[0]);
+    close(sv[1]);
+  }
 }
