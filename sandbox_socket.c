@@ -12,38 +12,11 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "landlock_compat.h"
+
 #ifdef LANDLOCK_ACCESS_SOCKET_CREATE
 
 int promise_no_new_sockets() {
-  /*
-   * Probe for the available Landlock ABI version using
-   * landlock_create_ruleset(2).
-   *
-   * This might return errors if Landlock is not supported by the
-   * kernel or if it is disabled at boot time.  We want to use the
-   * strongest available guarantees in a "best effort" way, so we
-   * return no error in this case.
-   */
-  int abi = syscall(SYS_landlock_create_ruleset, NULL, 0,
-                    LANDLOCK_CREATE_RULESET_VERSION);
-  if (abi < 0) {
-    switch (errno) {
-    case ENOSYS:     /* Landlock unsupported */
-    case EOPNOTSUPP: /* Landlock disabled */
-      return 0;
-    }
-    return -1;
-  }
-
-  if (abi < 6) {
-    /*
-     * Landlock socket creation support is only available since
-     * version 6 of the Landlock ABI.  On earlier ABI versions,
-     * we can't do anything, so we degrade gracefully.
-     */
-    return 0;
-  }
-
   /*
    * Enable "no new privileges" mode (c.f. prctl(2)).
    *
@@ -57,9 +30,9 @@ int promise_no_new_sockets() {
    * Construct a ruleset with the strongest guarantees we can provide
    * at the given ABI version.
    */
-  struct landlock_ruleset_attr attr = {
-      .handled_access_socket = LANDLOCK_ACCESS_SOCKET_CREATE,
-  };
+  struct landlock_ruleset_attr attr;
+  if (landlock_get_best_ruleset_attr(&attr, 6) < 0)
+    return -1;
   int ruleset_fd =
       syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);
   if (ruleset_fd < 0) {

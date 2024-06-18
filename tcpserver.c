@@ -19,14 +19,17 @@
 
 #include <err.h>
 #include <errno.h>
+#include <linux/landlock.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "sandbox_socket.h"
+#include "landlock_compat.h"
 #include "naughty.h"
 
 void handle(int fd) {
@@ -36,6 +39,8 @@ void handle(int fd) {
 
   write(fd, "bye\n", 4);
 }
+
+int enable_landlock();
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
@@ -66,13 +71,13 @@ int main(int argc, char *argv[]) {
   if (sockfd < 0)
     err(1, "socket");
 
-  /* enable landlock policy */
-  if (promise_no_new_sockets() < 0)
-    err(1, "landlock");
-
   /* bind socket */
   if (bind(sockfd, info->ai_addr, info->ai_addrlen) < 0)
     err(1, "bind");
+
+  /* enable landlock policy */
+  if (enable_landlock() < 0)
+    err(1, "landlock");
 
   freeaddrinfo(info);
 
@@ -91,4 +96,52 @@ int main(int argc, char *argv[]) {
     handle(fd);
     close(fd);
   }
+}
+
+int enable_landlock() {
+  /*
+   * Enable "no new privileges" mode (c.f. prctl(2)).
+   *
+   * This is a prerequisite for enforcing a Landlock ruleset.
+   */
+  if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) < 0) {
+    return -1;
+  }
+
+  /*
+   * Probe which Landlock version we have available and construct the
+   * matching Landlock ruleset attributes, up to ABI version 6.  This
+   * means that the following operations will be forbidden, if it is
+   * possible:
+   *
+   *  - Access to file system
+   *  - TCP bind(2) and connect(2)
+   *  - Creation of new sockets
+   */
+  struct landlock_ruleset_attr attr;
+  if (landlock_get_best_ruleset_attr(&attr, 6) < 0)
+    return -1;
+
+  /*
+   * Construct a ruleset with the strongest guarantees we can provide
+   * at the given ABI version.
+   */
+  int ruleset_fd =
+      syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);
+  if (ruleset_fd < 0) {
+    return -1;
+  }
+
+  /*
+   * Enforce the ruleset.
+   */
+  int res = 0;
+  if (syscall(SYS_landlock_restrict_self, ruleset_fd, 0) < 0) {
+    res = -1;
+    goto out;
+  }
+
+out:
+  close(ruleset_fd);
+  return res;
 }
