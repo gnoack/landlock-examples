@@ -26,13 +26,21 @@ static struct landlock_ruleset_attr landlock_ruleset_attrs[] = {
     {
         /* ABI v4: add TCP bind and connect */
         .handled_access_fs  = (1ULL << 15) - 1,
-        .handled_access_net = (1ULL << 2) -1,
+        .handled_access_net = (1ULL << 2) - 1,
     },
     {
         /* ABI v5: add "ioctl_dev" */
         .handled_access_fs  = (1ULL << 16) - 1,
-        .handled_access_net = (1ULL << 2) -1,
+        .handled_access_net = (1ULL << 2) - 1,
     },
+#ifdef LANDLOCK_ACCESS_SOCKET_CREATE
+    {
+        /* ABI v6: add socket creation */
+        .handled_access_fs  = (1ULL << 16) - 1,
+        .handled_access_net = (1ULL << 2) - 1,
+        .handled_access_socket = (1ULL << 1) - 1,
+    },
+#endif /* LANDLOCK_ACCESS_SOCKET_CREATE */
 };
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
