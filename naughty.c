@@ -30,7 +30,7 @@ void naughty_create_new_socket() {
 
 static int disconnect(int fd) {
   struct sockaddr_in addr = {
-    .sin_family = AF_UNSPEC,
+      .sin_family = AF_UNSPEC,
   };
   return connect(fd, (struct sockaddr *)&addr, sizeof addr);
 }
@@ -39,7 +39,7 @@ void naughty_reuse_socket(int client_fd) {
   printf("*** naughty_reuse_socket(%d)\n", client_fd);
   if (disconnect(client_fd) < 0)
     warn("disconnect(%d)", client_fd);
-  
+
   if (listen(client_fd, 20) < 0)
     warn("listen(%d, 20)", client_fd);
   else
@@ -54,4 +54,3 @@ void naughty_reuse_socket(int client_fd) {
   write(fd2, "h4x0r\n", 6);
   close(fd2);
 }
-
