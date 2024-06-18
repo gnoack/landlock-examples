@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "sandbox.h"
+#include "sandbox_file.h"
 
 void usage() { puts("Usage: convert [-o OUTFILE] [INFILE]"); }
 

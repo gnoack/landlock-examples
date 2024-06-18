@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "sandbox.h"
+#include "sandbox_file.h"
 
 void usage() { puts("Usage: tr STRING1 STRING2"); }
 
