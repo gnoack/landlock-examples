@@ -1,6 +1,6 @@
 .PHONY: clean
 
-CFLAGS = -Wall
+CFLAGS += -Wall
 
 ifneq ($(KBUILD_OUTPUT),)
 	CFLAGS += -I $(KBUILD_OUTPUT)/usr/include
