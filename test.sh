@@ -16,6 +16,16 @@ assert_eq() {
 
 LLBIN=${LLBIN:-.}
 
+CONVERT="${LLBIN}/convert"
+if [ ! -e "${CONVERT}" ]; then
+    fail "missing executable ${CONVERT}"
+fi
+
+assert_eq "$(echo "xyz" | ${CONVERT})" "Xyz" "convert output"
+assert_eq "$(echo "h4x0r" | ${CONVERT})" "h4X0r" "convert output"
+
+echo "✅ OK (convert)"
+
 TR="${LLBIN}/tr"
 if [ ! -e "${TR}" ]; then
     fail "missing executable ${TR}"

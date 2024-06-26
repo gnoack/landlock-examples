@@ -16,7 +16,7 @@ tcpserver: tcpserver.o landlock_compat.o naughty.o
 
 convert: convert.o sandbox_file.o
 
-test: tr
+test: tr convert
 	@./test.sh
 
 clean:
