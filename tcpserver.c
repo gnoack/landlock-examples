@@ -28,12 +28,28 @@
 #include "landlock_compat.h"
 #include "naughty.h"
 
+static char docs[] = \
+  "to emulate attacker behaviour:\n" \
+  " * send 's' to create a new socket\n" \
+  " * send 'r' to reuse an existing socket\n";
+
 void handle(int fd) {
   /* Pretend that the process got taken over by an attacker. */
-  naughty_create_new_socket();
-  naughty_reuse_socket(4);
-
-  write(fd, "bye\n", 4);
+  write(fd, docs, sizeof(docs));
+  char c = 0;
+  if (read(fd, &c, 1) < 1) {
+    warn("client connection read");
+  }
+  switch (c) {
+  case 's':
+    naughty_create_new_socket();
+    break;
+  case 'r':
+    naughty_reuse_socket(4);
+    break;
+  default:
+    write(fd, "bye\n", 4);
+  }
 }
 
 int enable_landlock();
