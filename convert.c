@@ -1,4 +1,8 @@
-/* A landlocked version of a file conversion command. */
+/* A landlocked version of a file conversion command.
+ *
+ * More documentation at
+ * https://wiki.gnoack.org/LandlockConvertExample
+ */
 
 #include <err.h>
 #include <fcntl.h>

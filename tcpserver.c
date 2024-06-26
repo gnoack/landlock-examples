@@ -8,6 +8,9 @@
  *
  * Landlock's socket creation support is currently under development
  * (as of June 2024), and the API may change in the future.
+ *
+ * More documentation at
+ * https://wiki.gnoack.org/LandlockTcpServerExample
  */
 
 #include <err.h>
