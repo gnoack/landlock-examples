@@ -19,6 +19,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/param.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
@@ -28,10 +29,9 @@
 #include "landlock_compat.h"
 #include "naughty.h"
 
-static char docs[] = \
-  "to emulate attacker behaviour:\n" \
-  " * send 's' to create a new socket\n" \
-  " * send 'r' to reuse an existing socket\n";
+static char docs[] = "to emulate attacker behaviour:\n"
+                     " * send 's' to create a new socket\n"
+                     " * send 'r' to reuse an existing socket\n";
 
 void handle(int fd) {
   /* Pretend that the process got taken over by an attacker. */
@@ -130,16 +130,15 @@ int enable_landlock() {
    *  - TCP bind(2) and connect(2)
    *  - Creation of new sockets
    */
-  struct landlock_ruleset_attr attr;
-  if (landlock_get_best_ruleset_attr(&attr, 6) < 0)
-    return -1;
+  struct landlock_ruleset_attr *attr =
+      &landlock_abi_ruleset_attrs[MIN(6, landlock_get_abi())];
 
   /*
    * Construct a ruleset with the strongest guarantees we can provide
    * at the given ABI version.
    */
   int ruleset_fd =
-      syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);
+      syscall(SYS_landlock_create_ruleset, attr, sizeof(*attr), 0U);
   if (ruleset_fd < 0) {
     return -1;
   }

@@ -11,7 +11,13 @@
  *
  * The indices in this table are one lower than the ABI version.
  */
-static struct landlock_ruleset_attr landlock_ruleset_attrs[] = {
+struct landlock_ruleset_attr landlock_abi_ruleset_attrs[] = {
+    {
+        /*
+         * ABI v0 does not actually exist, but is sometimes useful to
+         * represent configurations where Landlock can not be used.
+         */
+    },
     {
         /* ABI v1 */
         .handled_access_fs = (1ULL << 13) - 1,
@@ -46,8 +52,7 @@ static struct landlock_ruleset_attr landlock_ruleset_attrs[] = {
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(A[0]))
 
-int landlock_get_best_ruleset_attr(struct landlock_ruleset_attr *attr,
-                                   int max_abi) {
+int landlock_get_abi() {
   /*
    * Probe for the available Landlock ABI version using
    * landlock_create_ruleset(2).
@@ -58,22 +63,32 @@ int landlock_get_best_ruleset_attr(struct landlock_ruleset_attr *attr,
     switch (errno) {
     case ENOSYS:     /* Landlock unsupported */
     case EOPNOTSUPP: /* Landlock disabled */
-      *attr = (struct landlock_ruleset_attr){};
-      return -2;
+      return 0;
     }
-    return -1;
+    /* Unknown other error, should never happen */
+    return 0;
   }
 
-  if (abi > ARRAY_SIZE(landlock_ruleset_attrs)) {
+  if (abi > ARRAY_SIZE(landlock_abi_ruleset_attrs) - 1) {
     /*
      * The kernel supports features that we don't know yet:
      * Treat it as the highest known Landlock version.
      */
-    abi = ARRAY_SIZE(landlock_ruleset_attrs);
+    abi = ARRAY_SIZE(landlock_abi_ruleset_attrs) - 1;
   }
-  if (abi < max_abi)
-    abi = max_abi;
+  return abi;
+}
 
-  *attr = landlock_ruleset_attrs[abi - 1];
-  return 0;
+struct landlock_ruleset_attr
+landlock_min_ruleset_attr(struct landlock_ruleset_attr *a,
+                          struct landlock_ruleset_attr *b) {
+  struct landlock_ruleset_attr res = {
+      .handled_access_fs = a->handled_access_fs & b->handled_access_fs,
+      .handled_access_net = a->handled_access_net & b->handled_access_net,
+#ifdef LANDLOCK_ACCESS_SOCKET_CREATE
+      .handled_access_socket =
+          a->handled_access_socket & b->handled_access_socket,
+#endif /* LANDLOCK_ACCESS_SOCKET_CREATE */
+  };
+  return res;
 }

@@ -28,11 +28,16 @@ int promise_no_new_sockets() {
 
   /*
    * Construct a ruleset with the strongest guarantees we can provide
-   * at the given ABI version.
+   * on the currently running kernel, but only up to ABI version 6 and
+   * only for socket creation.
    */
-  struct landlock_ruleset_attr attr;
-  if (landlock_get_best_ruleset_attr(&attr, 6) < 0)
-    return -1;
+  struct landlock_ruleset_attr attr = {
+      .handled_access_socket =
+          landlock_abi_ruleset_attrs[6].handled_access_socket,
+  };
+  attr = landlock_min_ruleset_attr(
+      &attr, &landlock_abi_ruleset_attrs[landlock_get_abi()]);
+
   int ruleset_fd =
       syscall(SYS_landlock_create_ruleset, &attr, sizeof(attr), 0U);
   if (ruleset_fd < 0) {
